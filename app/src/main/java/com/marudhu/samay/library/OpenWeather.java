@@ -1,17 +1,20 @@
 package com.marudhu.samay.library;
 
-import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Created by marudhu on 19/8/14.
  */
 public class OpenWeather {
 
-    private String imageurl ="http://openweathermap.org/img/w/"
+    private String imageurl ="http://openweathermap.org/img/w/";
 
-    private Map<Integer , String>  map;
+    private HashMap<Integer , String> map;
 
     public OpenWeather(){
+
+        map = new HashMap<Integer, String>();
+
         map.put(200,imageurl + "11d.png");
         map.put(201,imageurl + "11d.png");
         map.put(202,imageurl + "11d.png");
