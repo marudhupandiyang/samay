@@ -12,25 +12,67 @@
         android:layout_width="fill_parent"
         android:layout_height="match_parent">
 
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/partly_cloudy"/>
+
+
         <TextView android:id="@+id/fullscreen_content"
             android:layout_width="match_parent"
             android:keepScreenOn="true"
-            android:textColor="#33b5e5"
+            android:textColor="#ff35c8ff"
             android:textStyle="bold"
-            android:textSize="50sp"
+            android:textSize="100sp"
             android:gravity="center"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:text="@string/dummy_content"
             android:layout_height="wrap_content" />
 
+
         <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/degreeType"
             android:layout_alignParentRight="true"
-
             android:layout_above="@id/fullscreen_content"/>
+
+
+        <ImageView
+            android:id="@+id/tempPic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fullscreen_content"
+            android:layout_marginLeft="10dp" />
+
+        <TextView android:id="@+id/tempType"
+            android:textColor="#33b5e5"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_below="@id/fullscreen_content"
+            android:text="Cloudy"
+            android:layout_toRightOf="@id/tempPic"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+
+
+        <TextView android:id="@+id/location"
+            android:textColor="#33b5e5"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_toRightOf="@id/tempType"
+            android:gravity="center"
+            android:layout_below="@id/fullscreen_content"
+            android:text="Bangalore, India"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+
 
         <!-- This FrameLayout insets its children based on system windows using
              android:fitsSystemWindows. -->

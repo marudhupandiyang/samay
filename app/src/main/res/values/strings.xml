@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">Samay</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_content">100</string>
 
 </resources>
