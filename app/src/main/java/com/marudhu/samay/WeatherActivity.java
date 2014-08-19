@@ -33,14 +33,22 @@ public class WeatherActivity extends Activity implements LocationListener {
     String tempType="cel";
     String currentCountry = "";
     String currentTempType ="";
+    String currentDescription;
     Double currentLattitude;
     Double currentLongitude;
-    Integer currentCondCode ;
+    Integer currentCondCode;
+
+    Double currentWindSpeed;
 
     TextView txtLocation;
     TextView txtTemp;
     TextView txtTempType;
     ImageView tempPic;
+    TextView txtCurrentDesc;
+    TextView txtWindSpeed;
+    Spinner spinnerCity;
+
+    ArrayAdapter cityAdapter;
 
     OpenWeather openWeather;
 
@@ -68,6 +76,9 @@ public class WeatherActivity extends Activity implements LocationListener {
         txtTemp = (TextView) findViewById(R.id.fullscreen_content);
         txtTempType = (TextView) findViewById(R.id.tempType);
         tempPic = (ImageView) findViewById(R.id.tempPic);
+        txtCurrentDesc = (TextView) findViewById(R.id.description);
+        txtWindSpeed = (TextView) findViewById(R.id.windSpeed);
+
 
         Spinner spinnertempType = (Spinner) findViewById(R.id.degreeType);
 
@@ -75,6 +86,8 @@ public class WeatherActivity extends Activity implements LocationListener {
         list.add("Celsius");
         list.add("Fahrenheit");
         list.add("Kelvin");
+
+
 
         final ArrayAdapter adapter = new ArrayAdapter(WeatherActivity.this,R.layout.spinner_item,list);
         spinnertempType.setAdapter(adapter);
@@ -94,6 +107,14 @@ public class WeatherActivity extends Activity implements LocationListener {
             }
         });
 
+
+        spinnerCity = (Spinner) findViewById(R.id.city);
+
+        ArrayList<String> cityList = new ArrayList<String>();
+
+        cityAdapter = new ArrayAdapter(WeatherActivity.this,R.layout.spinner_item);
+        spinnerCity.setAdapter(cityAdapter);
+
         newLocationFound(locationManager.getLastKnownLocation(LOCATION_SERVICE));
         fetchPref();
     }
@@ -103,22 +124,23 @@ public class WeatherActivity extends Activity implements LocationListener {
 //        Toast.makeText(this,"Updating",Toast.LENGTH_SHORT).show();
 
         if (tempType.equals("Celsius")) { //celcius temp
-            txtTemp.setText(Integer.toString((int) (currentTemp  - 273.15)) + " °");
+            txtTemp.setText(Integer.toString((int) (currentTemp  - 273.15)) + "°");
         }else  if (tempType.equals("Fahrenheit")) { //fahrenheit temp
-            txtTemp.setText(Integer.toString((int) (currentTemp  - -457.87)) + "°");
+            txtTemp.setText(Integer.toString((int) ((currentTemp  - 273.15)*1.8) + 32) + "°");
         }else{ //default kelvin temp
-            txtTemp.setText(Double.toString(currentTemp) + " °");
+            txtTemp.setText(Double.toString(currentTemp) + "°");
         }
 
         txtLocation.setText(currentCity + ", " + currentCountry);
         txtTempType.setText(currentTempType + " in ");
 
+        txtCurrentDesc.setText(currentDescription);
+        txtWindSpeed.setText(String.valueOf(currentWindSpeed) + "km");
+
         Ion.with(WeatherActivity.this)
            .load(openWeather.getImageUrl(currentCondCode))
            .withBitmap()
            .intoImageView(tempPic);
-
-
 
     }
 
@@ -131,13 +153,19 @@ public class WeatherActivity extends Activity implements LocationListener {
         prefEditor.putString("currentTemp", String.valueOf(currentTemp));
         prefEditor.putString("currentTempType",currentTempType);
         prefEditor.putInt("currentCondCode",currentCondCode);
-
+        prefEditor.putString("currentDesc",currentDescription);
+        prefEditor.putString("currentWindSpeed", String.valueOf(currentWindSpeed));
 
         prefEditor.putString("currentLat", String.valueOf(currentLattitude));
         prefEditor.putString("currentLong",String.valueOf(currentLongitude.toString()));
 
         prefEditor.commit();
         fetchPref();
+
+        cityAdapter.add(currentCity);
+        cityAdapter.notifyDataSetChanged();
+
+
     }
 
     private void fetchPref(){
@@ -149,8 +177,24 @@ public class WeatherActivity extends Activity implements LocationListener {
         currentTempType = pref.getString("currentTempType", "");
         currentCondCode = pref.getInt("currentCondCode",200);
 
-        currentLattitude = Double.parseDouble(pref.getString("currentLat", ""));
-        currentLongitude = Double.parseDouble(pref.getString("currentLong", ""));
+        try {
+            currentWindSpeed = Double.valueOf(pref.getString("currentWindSpeed", ""));
+        }catch(Exception e){
+            currentWindSpeed = 0.0;
+        }
+
+        try {
+            currentLattitude = Double.parseDouble(pref.getString("currentLat", ""));
+        }catch (Exception e){
+            currentLattitude = 0.0;
+        }
+
+        try {
+            currentLongitude = Double.parseDouble(pref.getString("currentLong", ""));
+        }catch (Exception e){
+            currentLongitude = 0.0;
+        }
+        currentDescription = pref.getString("currentDesc","");
 
         updateView();
     }
@@ -175,7 +219,13 @@ public class WeatherActivity extends Activity implements LocationListener {
 
                         currentCountry = result.get("sys").getAsJsonObject().get("country").getAsString();
 
-                        currentTempType = result.get("weather").getAsJsonArray().get(0).getAsJsonObject().get("main").getAsString();
+                        JsonObject weatherJson = result.get("weather").getAsJsonArray().get(0).getAsJsonObject();
+                        currentTempType = weatherJson.get("main").getAsString();
+
+                        currentDescription = weatherJson.get("description").getAsString();
+
+                        currentWindSpeed = Double.parseDouble(result.get("wind").getAsJsonObject().get("speed").getAsString()) * 1.609;
+
 
                         updatePref();
                     }
