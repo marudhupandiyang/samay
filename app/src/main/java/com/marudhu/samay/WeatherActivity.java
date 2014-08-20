@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -25,6 +27,8 @@ public class WeatherActivity extends Activity implements LocationListener {
 
     LocationManager locationManager;
 
+
+    boolean firstTime;
     /* Location info */
 
     //default temp in kelvin
@@ -57,13 +61,13 @@ public class WeatherActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
 
         getActionBar().hide();
-        setContentView(R.layout.activity_weather);
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
 
         try {
-             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 2, 10, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 2, 10, this);
         }catch (Exception e){}
 
         try {
@@ -71,6 +75,40 @@ public class WeatherActivity extends Activity implements LocationListener {
         }catch (Exception e){}
 
         openWeather = new OpenWeather();
+
+
+        if (settings.getBoolean("FirstTime",true)) {
+            firstTime = true;
+
+            RelativeLayout layout = new RelativeLayout(this);
+            ProgressBar progressBar = new ProgressBar(WeatherActivity.this,null,android.R.attr.progressBarStyleLarge);
+            progressBar.setIndeterminate(true);
+            progressBar.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100,100);
+            params.addRule(RelativeLayout.CENTER_IN_PARENT);
+            layout.addView(progressBar,params);
+
+            setContentView(layout);
+            settings.edit().putBoolean("FirstTime", false).commit();
+            return;
+        }
+
+
+        firstTime = false;
+
+
+
+        initApp();
+        newLocationFound(locationManager.getLastKnownLocation(LOCATION_SERVICE));
+        fetchPref();
+
+
+    }
+
+
+    private void initApp(){
+
+        setContentView(R.layout.activity_weather);
 
         txtLocation = (TextView) findViewById(R.id.location);
         txtTemp = (TextView) findViewById(R.id.fullscreen_content);
@@ -114,12 +152,14 @@ public class WeatherActivity extends Activity implements LocationListener {
 
         cityAdapter = new ArrayAdapter(WeatherActivity.this,R.layout.spinner_item);
         spinnerCity.setAdapter(cityAdapter);
-
-        newLocationFound(locationManager.getLastKnownLocation(LOCATION_SERVICE));
-        fetchPref();
     }
 
+
     private void updateView(){
+
+        if (firstTime){
+            initApp();
+        }
 
 //        Toast.makeText(this,"Updating",Toast.LENGTH_SHORT).show();
 
@@ -169,6 +209,7 @@ public class WeatherActivity extends Activity implements LocationListener {
     }
 
     private void fetchPref(){
+
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
 
         currentCity = pref.getString("currentCity", "");
